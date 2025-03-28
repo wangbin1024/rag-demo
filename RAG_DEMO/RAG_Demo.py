@@ -485,12 +485,12 @@ PROMPT_FORMAT_NEW_3 = """
 
   - **会社規定に基づいて判断し、個人的な推論は行わないこと。**
   - 経路が複数に分かれている場合は、**合計金額を1か月の定期代**として判断すること。また、**合計距離を通勤距離**として判断すること。
-  - **最寄り駅に関しては「【最寄り駅確認結果】」を必ず参考にすること。**
+  - **最寄り駅に関しては「【最寄り駅などの検索結果】」を参考にすること。**
   - 判断結果は、**「問題なし」「問題あり」「要確認」** の3種類のみとする。
   - すべての規定に適合している場合は「問題なし」とし、**一つでも適合していない場合は「問題あり」** とすること。
   - **規定に記載がない場合、判断がつかない場合、または別途定める基準がある場合は「要確認」とすること。**
   - **すべての申請者を漏れなくチェックすること。**
-  - 今回の申請と申請履歴に一致する申請者名があれば、履歴ありと判断し、その**申請履歴を表示すること**。履歴がない場合は、申請履歴のセクションは表示しないこと。
+  - 過去の申請履歴がある場合は、その**申請履歴を表示すること**。履歴がない場合は、申請履歴のセクションは表示しないこと。
 
   ---
 
@@ -502,18 +502,18 @@ PROMPT_FORMAT_NEW_3 = """
     - [申請履歴内容]  
     - or `なし`
 
+  - **最寄り駅確認結果**:  
+  - `一致`  
+  - `不一致`　検索された最寄り駅：[検索された最寄り駅名]
+
   - **会社規定の引用と判断理由**:  
     - `[引用した会社規定]`  
     - `[規程に基づいた詳細な判断理由]`
 
-  - **結果**:  
-    - `問題なし`  
-    - `問題あり`  
-    - `要確認`
-
-  - **最寄り駅確認結果**:  
-    - `一致`  
-    - `不一致`
+  - **最終判断結果**:  
+  - `問題なし`  
+  - `問題あり`  
+  - `要確認`
 """
 
 
@@ -753,24 +753,24 @@ chain.invoke(input_example)
 # COMMAND ----------
 
 # DBTITLE 1,Agent Frameworkを使って、RAGアプリケーションをデプロイ
-from databricks import agents  # RAGアプリをデプロイするために Databricksのagents API を使う
-import time  # デプロイ完了を待機するために使う
-from databricks.sdk.service.serving import EndpointStateReady, EndpointStateConfigUpdate  # エンドポイントの状態をチェックするために使う
+# from databricks import agents  # RAGアプリをデプロイするために Databricksのagents API を使う
+# import time  # デプロイ完了を待機するために使う
+# from databricks.sdk.service.serving import EndpointStateReady, EndpointStateConfigUpdate  # エンドポイントの状態をチェックするために使う
 
-# Use Unity Catalog to log the chain
-mlflow.set_registry_uri('databricks-uc')
+# # Use Unity Catalog to log the chain
+# mlflow.set_registry_uri('databricks-uc')
 
 
-# Register the chain to UC
-uc_registered_model_info = mlflow.register_model(model_uri=logged_chain_info.model_uri, name=UC_MODEL_NAME)
+# # Register the chain to UC
+# uc_registered_model_info = mlflow.register_model(model_uri=logged_chain_info.model_uri, name=UC_MODEL_NAME)
 
-# Deploy to enable the Review APP and create an API endpoint
-deployment_info = agents.deploy(model_name=UC_MODEL_NAME, model_version=uc_registered_model_info.version)
+# # Deploy to enable the Review APP and create an API endpoint
+# deployment_info = agents.deploy(model_name=UC_MODEL_NAME, model_version=uc_registered_model_info.version)
 
-# Wait for the Review App to be ready
-print("\nWaiting for endpoint to deploy.  This can take 15 - 20 minutes.", end="")
-while w.serving_endpoints.get(deployment_info.endpoint_name).state.ready == EndpointStateReady.NOT_READY or w.serving_endpoints.get(deployment_info.endpoint_name).state.config_update == EndpointStateConfigUpdate.IN_PROGRESS:
-    print(".", end="")
-    time.sleep(30)
+# # Wait for the Review App to be ready
+# print("\nWaiting for endpoint to deploy.  This can take 15 - 20 minutes.", end="")
+# while w.serving_endpoints.get(deployment_info.endpoint_name).state.ready == EndpointStateReady.NOT_READY or w.serving_endpoints.get(deployment_info.endpoint_name).state.config_update == EndpointStateConfigUpdate.IN_PROGRESS:
+#     print(".", end="")
+#     time.sleep(30)
 
-print(f"Endpoint {deployment_info.endpoint_name} is now ready!")
+# print(f"Endpoint {deployment_info.endpoint_name} is now ready!")
